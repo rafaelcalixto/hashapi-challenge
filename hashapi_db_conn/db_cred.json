@@ -1,0 +1,8 @@
+{
+    "host"    : "wt-postgres-test.c0fua9u7ixva.us-east-2.rds.amazonaws.com",
+    "port"    : "5432",
+    "user"    : "rhizom",
+    "dbname"  : "wt_postgres_test ",
+    "pw"      : "blockchain",
+    "sslmode" : "disable"
+}

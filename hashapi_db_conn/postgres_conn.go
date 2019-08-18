@@ -9,14 +9,12 @@ import (
     "io/ioutil"
 )
 
+// File name with the configuration to access the database
 const (
     credfile string = "db_cred.json"
 )
 
-type connect struct {
-    conn  *sql.DB
-}
-
+// Format for the data requested in the database connection
 type credentials struct {
     Host    string `json:"host"`
     Port    string `json:"port"`
@@ -24,6 +22,10 @@ type credentials struct {
     DBName  string `json:"dbname"`
     PW      string `json:"pw"`
     SSLMode string `json:"sslmode"`
+}
+
+type connect struct {
+    conn  *sql.DB
 }
 
 var (
@@ -40,6 +42,7 @@ var (
     comp_data map[string]string
 )
 
+// Function to read the credentials of connection with the database
 func ReadCred() map[string]string {
     jsonfile, err := ioutil.ReadFile(credfile)
     if err != nil { fmt.Println(err) }
@@ -59,6 +62,7 @@ func ReadCred() map[string]string {
     return db_cred
 }
 
+// Function to start the connection with the database
 func OpenConn() (connect) {
     db_cred = ReadCred()
     cs = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
@@ -71,10 +75,12 @@ func OpenConn() (connect) {
     return db
 }
 
+// Function to close the connection with the database
 func CloseConn(db connect) {
     db.conn.Close()
 }
 
+// Function to insert data in the database
 func InsertToken(hash string, token string, db connect) (int64) {
     query = fmt.Sprintf("insert into tokens (hash, token) values " +
                       "('%s', '%s') on conflict do nothing", hash, token)
@@ -85,6 +91,7 @@ func InsertToken(hash string, token string, db connect) (int64) {
     return aff_rows
 }
 
+// Function to return all the table from the database
 func ReturnAll(db connect) ( map[string]string ) {
     query = fmt.Sprintf("select hash, token from tokens")
     rows, err := db.conn.Query(query)
@@ -108,6 +115,7 @@ func ReturnAll(db connect) ( map[string]string ) {
     return comp_data
 }
 
+// Function to return a specific row from the database
 func ReturnToken(token string, db connect) ( map[string]string ) {
     query = fmt.Sprintf("select hash, token from tokens where hash = '%s'",
                         token)
@@ -116,6 +124,7 @@ func ReturnToken(token string, db connect) ( map[string]string ) {
 
     switch {
     case err == sql.ErrNoRows:
+        // Code of Page Not found in http protocol
         comp_data["msg"] = "404"
     case err != nil:
         log.Fatalf("Error while querying: %v", err)

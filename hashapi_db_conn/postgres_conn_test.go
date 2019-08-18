@@ -22,25 +22,3 @@ func TestOpenConn(t *testing.T) {
         if t_return != 1 { t.Errorf("Error in the database answer") }
     })
 }
-
-func TestAPILoad(t *testing.T) {
-    // Update Test
-    t.Run("Update Test", func(t *testing.T) {
-        db_test = OpenConn()
-        defer CloseConn(db_test)
-        t_return = APILoad("test", "99999", "www.test.com", db_test)
-        if t_return != 0 { t.Errorf("Error in the update answer") }
-    })
-}
-
-func TestAPIQuery(t *testing.T) {
-    // Select Test
-    t.Run("Select Test", func(t *testing.T) {
-        db_test = OpenConn()
-        defer CloseConn(db_test)
-        comp_data_test = APIQuery("test", "99999", db_test)
-        if comp_data_test["msg"] != "No match results" {
-            t.Errorf("Wrog return from database query") 
-        }
-    })
-}
