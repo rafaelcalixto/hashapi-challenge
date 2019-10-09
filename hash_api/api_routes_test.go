@@ -1,4 +1,4 @@
-package neoway_api
+package hash_api
 
 import (
     // Core libraries

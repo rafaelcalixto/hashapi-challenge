@@ -1,4 +1,4 @@
-package neoway_db_conn
+package hashapi_db_conn
 
 import (
     "testing"

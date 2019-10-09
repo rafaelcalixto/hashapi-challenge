@@ -1,9 +1,11 @@
-package neoway_api
+package hash_api
 
 import (
     // Core libraries
     "fmt"
     "net/http"
+    //"strings"
+    //"strconv"
     "crypto/sha256"
     // Proprietary libraries
     dt "hashapi_db_conn"
@@ -13,6 +15,7 @@ var (
     msg          string
     token        string
     query_return map[string]string
+    ok           bool
 )
 
 // This function returns for the Browsers some informations about the API
@@ -27,7 +30,7 @@ func Index_handler(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, "This is the API for the Hash API test")
 }
 
-// This function take the parameters passed on the API and insert on
+// This function take the parameters passed on the API and update the website on
 // the database
 func CreateHash(w http.ResponseWriter, r *http.Request) {
     enableCors(&w)
@@ -36,6 +39,9 @@ func CreateHash(w http.ResponseWriter, r *http.Request) {
     db := dt.OpenConn()
     defer dt.CloseConn(db)
 
+    // Here the function to create the hashs is initialized
+    hasher := sha256.New()
+
     // Here the token is captured from the URL parameters
     param, ok := r.URL.Query()["t"]
     if !ok || len(param[0]) < 1 {
@@ -43,14 +49,10 @@ func CreateHash(w http.ResponseWriter, r *http.Request) {
         return
     }
     token = param[0]
-
-    // Here the function to create the hashs is initialized
-    hasher := sha256.New()
     hasher.Write([]byte(token))
-
     msg = fmt.Sprintf("%x", hasher.Sum(nil) )
 
-    // This block returns a message if the database was successfull inserted
+    // This block returns a message if the database was successfull updated
     work := dt.InsertToken(msg, token, db)
     if work == 1 {
         msg = fmt.Sprintf( "The hash \"%s\" was included", msg)
@@ -60,7 +62,8 @@ func CreateHash(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, msg)
 }
 
-// This function returns all the hashs and tokens on the database
+// This function take the parameters passed on the API and search for matchs on
+// the database
 func ReturnHash(w http.ResponseWriter, r *http.Request) {
     enableCors(&w)
 
@@ -68,9 +71,8 @@ func ReturnHash(w http.ResponseWriter, r *http.Request) {
     db := dt.OpenConn()
     defer dt.CloseConn(db)
 
-    // The below function returns the data from the database (if exists) and
-    // the below if steatment builds a string to be printed on the API in
-    // JSON format
+    // The below function returns the datafrom the database (if matched) and
+    // the below if steatment builds a string to be printed on the API
     query_return = dt.ReturnAll(db)
     if _, ok := query_return["msg"]; ok {
         msg = fmt.Sprintf("{\n\t\"msg\": \"" + query_return["msg"] + "\"\n}")
@@ -85,8 +87,6 @@ func ReturnHash(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, msg)
 }
 
-// This function takes the token passed on the API and search for matchs on
-// the database
 func ReturnText(w http.ResponseWriter, r *http.Request) {
     enableCors(&w)
 
@@ -102,9 +102,8 @@ func ReturnText(w http.ResponseWriter, r *http.Request) {
     }
     token = param[0]
 
-    // The below function returns the data from the database (if matched) and
-    // the below if steatment builds a string to be printed on the API in
-    // JSON format
+    // The below function returns the datafrom the database (if matched) and
+    // the below if steatment builds a string to be printed on the API
     query_return = dt.ReturnToken(token, db)
     if _, ok := query_return["msg"]; ok {
         msg = fmt.Sprintf("{\n\t\"msg\": \"" + query_return["msg"] + "\"\n}")
@@ -117,5 +116,6 @@ func ReturnText(w http.ResponseWriter, r *http.Request) {
         msg += "\n}"
     }
 
+    // Opening the Database Connection
     fmt.Fprintf(w, msg)
 }
